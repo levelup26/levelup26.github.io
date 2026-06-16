@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LevelUp26 – برنامه‌ریز روزانه</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ─── HEADER / HUD ─── -->
+  <header class="hud">
+    <div class="hud__brand">
+      <span class="hud__icon">⚔️</span>
+      <span class="hud__title">LevelUp26</span>
+    </div>
+
+    <div class="hud__player">
+      <div class="hud__avatar" id="avatarDisplay">🧙</div>
+      <div class="hud__info">
+        <div class="hud__name" id="playerName">ماجراجو</div>
+        <div class="hud__level-row">
+          <span class="hud__level-label">LV</span>
+          <span class="hud__level-num" id="playerLevel">1</span>
+          <div class="hud__xp-bar-wrap">
+            <div class="hud__xp-bar" id="xpBar" style="width:0%"></div>
+          </div>
+          <span class="hud__xp-text" id="xpText">0 / 100 XP</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hud__stats">
+      <div class="hud__stat">
+        <span class="hud__stat-val" id="statStreak">0</span>
+        <span class="hud__stat-key">🔥 streak</span>
+      </div>
+      <div class="hud__stat">
+        <span class="hud__stat-val" id="statCoins">0</span>
+        <span class="hud__stat-key">💎 سکه</span>
+      </div>
+      <div class="hud__stat">
+        <span class="hud__stat-val" id="statDone">0</span>
+        <span class="hud__stat-key">✅ تمام‌شده</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ─── LEVEL-UP BANNER ─── -->
+  <div class="levelup-banner" id="levelupBanner">
+    <div class="levelup-banner__inner">
+      <div class="levelup-banner__glow"></div>
+      <p class="levelup-banner__label">LEVEL UP!</p>
+      <p class="levelup-banner__num" id="levelupNum">2</p>
+    </div>
+  </div>
+
+  <!-- ─── MAIN ─── -->
+  <main class="app">
+
+    <!-- TABS -->
+    <nav class="tabs">
+      <button class="tab tab--active" data-tab="daily">📅 روزانه</button>
+      <button class="tab" data-tab="weekly">📆 هفتگی</button>
+      <button class="tab" data-tab="monthly">🗓️ ماهانه</button>
+      <button class="tab" data-tab="rewards">🏆 جوایز</button>
+    </nav>
+
+    <!-- QUEST PANELS -->
+    <section class="panel panel--active" id="tab-daily">
+      <div class="panel__header">
+        <div>
+          <h2 class="panel__title">کوئست‌های روزانه</h2>
+          <div class="slot-info" id="slotInfoDaily"></div>
+        </div>
+        <button class="btn-add" id="addDailyBtn">+ کوئست جدید</button>
+      </div>
+      <div class="quest-list" id="dailyList"></div>
+    </section>
+
+    <section class="panel" id="tab-weekly">
+      <div class="panel__header">
+        <div>
+          <h2 class="panel__title">کوئست‌های هفتگی</h2>
+          <div class="slot-info" id="slotInfoWeekly"></div>
+        </div>
+        <button class="btn-add" id="addWeeklyBtn">+ کوئست جدید</button>
+      </div>
+      <div class="quest-list" id="weeklyList"></div>
+    </section>
+
+    <section class="panel" id="tab-monthly">
+      <div class="panel__header">
+        <div>
+          <h2 class="panel__title">کوئست‌های ماهانه</h2>
+          <div class="slot-info" id="slotInfoMonthly"></div>
+        </div>
+        <button class="btn-add" id="addMonthlyBtn">+ کوئست جدید</button>
+      </div>
+      <div class="quest-list" id="monthlyList"></div>
+    </section>
+
+    <!-- REWARDS PANEL -->
+    <section class="panel" id="tab-rewards">
+      <div class="panel__header">
+        <h2 class="panel__title">🏆 گنجینه جوایز</h2>
+      </div>
+      <div class="rewards-grid" id="rewardsGrid"></div>
+    </section>
+
+  </main>
+
+  <!-- ─── MODAL: ADD / EDIT QUEST ─── -->
+  <div class="modal-overlay" id="questModal">
+    <div class="modal">
+      <div class="modal__header">
+        <h3 class="modal__title" id="modalTitle">کوئست جدید</h3>
+        <button class="modal__close" id="modalClose">✕</button>
+      </div>
+      <div class="modal__body">
+        <label class="form-label">نام کوئست</label>
+        <input class="form-input" id="questTitleInput" placeholder="مثلاً: ورزش کردن" />
+
+        <label class="form-label">توضیحات (اختیاری)</label>
+        <input class="form-input" id="questDescInput" placeholder="جزئیات بیشتر..." />
+
+        <label class="form-label">اولویت</label>
+        <select class="form-input" id="questPriorityInput">
+          <option value="low">🟢 عادی</option>
+          <option value="mid" selected>🟡 مهم</option>
+          <option value="high">🔴 حیاتی</option>
+        </select>
+
+        <div class="modal-reward-preview" id="modalRewardPreview">
+          <span id="previewXp">⚡ 25 XP</span>
+          <span id="previewCoins">💎 6 سکه</span>
+        </div>
+      </div>
+      <div class="modal__footer">
+        <button class="btn-secondary" id="modalCancelBtn">انصراف</button>
+        <button class="btn-primary" id="modalSaveBtn">ذخیره کوئست</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── MODAL: PROGRESS ─── -->
+  <div class="modal-overlay" id="progressModal">
+    <div class="modal modal--sm">
+      <div class="modal__header">
+        <h3 class="modal__title">پیشرفت کوئست</h3>
+        <button class="modal__close" id="progressClose">✕</button>
+      </div>
+      <div class="modal__body">
+        <p class="form-label" id="progressQuestName"></p>
+        <div class="progress-slider-wrap">
+          <input type="range" class="progress-slider" id="progressSlider" min="0" max="100" step="5" />
+          <span class="progress-slider-val" id="progressSliderVal">50%</span>
+        </div>
+      </div>
+      <div class="modal__footer">
+        <button class="btn-secondary" id="progressCancelBtn">انصراف</button>
+        <button class="btn-primary" id="progressSaveBtn">ثبت پیشرفت</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── SUPPORT FOOTER ─── -->
+  <footer class="support-footer">
+    <a class="support-btn" href="https://www.coffeete.ir/BlackTro" target="_blank" rel="noopener">
+      <span class="support-btn__icon">☕</span>
+      <span class="support-btn__text">یه قهوه مهمونم کن</span>
+    </a>
+  </footer>
+
+  <!-- ─── TOAST ─── -->
+  <div class="toast" id="toast"></div>
+
+  <script src="data.js"></script>
+  <script src="ui.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
