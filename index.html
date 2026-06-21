@@ -3,12 +3,92 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LevelUp26 – برنامه‌ریز روزانه</title>
+
+  <!-- ── SEO ── -->
+  <title>LevelUp26 – برنامه‌ریز روزانه گیمیفای‌شده | لول آپ کن با انجام کارهات</title>
+  <meta name="description" content="LevelUp26 یه برنامه‌ریز روزانه به سبک بازی‌هاست. تسک‌هات رو به کوئست تبدیل کن، XP بگیر، لول آپ کن و جوایز آنلاک کن. برای کسایی که انگیزه می‌خوان!" />
+  <meta name="keywords" content="برنامه ریزی روزانه، تایم منیجمنت، گیمیفیکیشن، todo list فارسی، مدیریت وظایف، انگیزه، لول آپ" />
+  <meta name="author" content="BlackTro – blacktro.ir" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://levelup26.github.io/" />
+
+  <!-- ── Open Graph ── -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:url"         content="https://levelup26.github.io/" />
+  <meta property="og:title"       content="LevelUp26 – برنامه‌ریز روزانه گیمیفای‌شده" />
+  <meta property="og:description" content="تسک‌هات رو به کوئست تبدیل کن، XP بگیر و لول آپ کن!" />
+  <meta property="og:locale"      content="fa_IR" />
+
+  <!-- ── Twitter Card ── -->
+  <meta name="twitter:card"        content="summary" />
+  <meta name="twitter:title"       content="LevelUp26 – برنامه‌ریز روزانه گیمیفای‌شده" />
+  <meta name="twitter:description" content="تسک‌هات رو به کوئست تبدیل کن، XP بگیر و لول آپ کن!" />
+
+  <!-- ── Schema.org ── -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "LevelUp26",
+    "description": "برنامه‌ریز روزانه گیمیفای‌شده به سبک بازی‌های ویدیویی",
+    "url": "https://levelup26.github.io/",
+    "applicationCategory": "ProductivityApplication",
+    "operatingSystem": "Web",
+    "inLanguage": "fa",
+    "author": { "@type": "Person", "name": "BlackTro", "url": "https://blacktro.ir" },
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "IRR" }
+  }
+  </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+
+  <!-- ─── ONBOARDING MODAL ─── -->
+  <div class="modal-overlay open" id="onboardingModal">
+    <div class="modal modal--onboard">
+      <div class="onboard">
+        <div class="onboard__hero">⚔️</div>
+        <h1 class="onboard__title">به LevelUp26 خوش اومدی!</h1>
+        <p class="onboard__sub">برنامه‌ریز روزانه‌ای که کارهات رو به ماجراجویی تبدیل می‌کنه</p>
+
+        <div class="onboard__steps">
+          <div class="onboard__step">
+            <span class="onboard__step-icon">📋</span>
+            <div>
+              <strong>کوئست اضافه کن</strong>
+              <p>هر کاری که باید انجام بدی رو به عنوان کوئست روزانه، هفتگی یا ماهانه ثبت کن</p>
+            </div>
+          </div>
+          <div class="onboard__step">
+            <span class="onboard__step-icon">⚡</span>
+            <div>
+              <strong>XP بگیر و لول آپ کن</strong>
+              <p>هر کوئست که تموم کنی XP می‌گیری. هرچی اولویت بالاتر، XP بیشتر!</p>
+            </div>
+          </div>
+          <div class="onboard__step">
+            <span class="onboard__step-icon">⏳</span>
+            <div>
+              <strong>به تایمر توجه کن</strong>
+              <p>کوئست‌های روزانه ۲۴ ساعت، هفتگی ۷ روز و ماهانه ۳۰ روز وقت دارن. منقضی نشن!</p>
+            </div>
+          </div>
+          <div class="onboard__step">
+            <span class="onboard__step-icon">🏆</span>
+            <div>
+              <strong>جوایز آنلاک کن</strong>
+              <p>با لول بالاتر، اسلات‌های بیشتری برای کوئست داری و جوایز جدید باز می‌شه</p>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-primary btn-primary--full" id="onboardingStartBtn">شروع ماجراجویی! 🚀</button>
+      </div>
+    </div>
+  </div>
 
   <!-- ─── HEADER / HUD ─── -->
   <header class="hud">
@@ -27,7 +107,7 @@
           <div class="hud__xp-bar-wrap">
             <div class="hud__xp-bar" id="xpBar" style="width:0%"></div>
           </div>
-          <span class="hud__xp-text" id="xpText">0 / 100 XP</span>
+          <span class="hud__xp-text" id="xpText">0 / 80 XP</span>
         </div>
       </div>
     </div>
@@ -36,10 +116,6 @@
       <div class="hud__stat">
         <span class="hud__stat-val" id="statStreak">0</span>
         <span class="hud__stat-key">🔥 streak</span>
-      </div>
-      <div class="hud__stat">
-        <span class="hud__stat-val" id="statCoins">0</span>
-        <span class="hud__stat-key">💎 سکه</span>
       </div>
       <div class="hud__stat">
         <span class="hud__stat-val" id="statDone">0</span>
@@ -60,7 +136,6 @@
   <!-- ─── MAIN ─── -->
   <main class="app">
 
-    <!-- TABS -->
     <nav class="tabs">
       <button class="tab tab--active" data-tab="daily">📅 روزانه</button>
       <button class="tab" data-tab="weekly">📆 هفتگی</button>
@@ -68,7 +143,6 @@
       <button class="tab" data-tab="rewards">🏆 جوایز</button>
     </nav>
 
-    <!-- QUEST PANELS -->
     <section class="panel panel--active" id="tab-daily">
       <div class="panel__header">
         <div>
@@ -102,7 +176,6 @@
       <div class="quest-list" id="monthlyList"></div>
     </section>
 
-    <!-- REWARDS PANEL -->
     <section class="panel" id="tab-rewards">
       <div class="panel__header">
         <h2 class="panel__title">🏆 گنجینه جوایز</h2>
@@ -133,9 +206,8 @@
           <option value="high">🔴 حیاتی</option>
         </select>
 
-        <div class="modal-reward-preview" id="modalRewardPreview">
+        <div class="modal-reward-preview">
           <span id="previewXp">⚡ 25 XP</span>
-          <span id="previewCoins">💎 6 سکه</span>
         </div>
       </div>
       <div class="modal__footer">
@@ -166,16 +238,25 @@
     </div>
   </div>
 
-  <!-- ─── SUPPORT FOOTER ─── -->
-  <footer class="support-footer">
+  <!-- ─── SUPPORT BUTTON ─── -->
+  <div class="support-footer">
     <a class="support-btn" href="https://www.coffeete.ir/BlackTro" target="_blank" rel="noopener">
       <span class="support-btn__icon">☕</span>
       <span class="support-btn__text">یه قهوه مهمونم کن</span>
     </a>
-  </footer>
+  </div>
 
   <!-- ─── TOAST ─── -->
   <div class="toast" id="toast"></div>
+
+  <!-- ─── FOOTER ─── -->
+  <footer class="site-footer">
+    <div class="site-footer__inner">
+      <span>© ۱۴۰۴ تمامی حقوق محفوظ است</span>
+      <span class="site-footer__sep">·</span>
+      <span>ساخته‌شده با ❤️ توسط <a href="https://blacktro.ir" target="_blank" rel="noopener">BlackTro</a></span>
+    </div>
+  </footer>
 
   <script src="data.js"></script>
   <script src="ui.js"></script>

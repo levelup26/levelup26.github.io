@@ -12,7 +12,6 @@ function renderHUD(state) {
   document.getElementById('playerLevel').textContent = player.level;
   document.getElementById('xpBar').style.width       = pct + '%';
   document.getElementById('xpText').textContent      = `${player.xp} / ${needed} XP`;
-  document.getElementById('statCoins').textContent   = player.coins;
   document.getElementById('statDone').textContent    = player.totalDone;
   document.getElementById('statStreak').textContent  = player.streak;
 
@@ -54,12 +53,30 @@ function renderQuestList(period, quests, state) {
 }
 
 function questCardHTML(period, q) {
-  const fillClass    = q.done ? 'quest-card__progress-fill done' : 'quest-card__progress-fill';
-  const doneClass    = q.done ? 'quest-card--done' : '';
-  const disabledAttr = q.done ? 'disabled' : '';
+  const expired      = isExpired(q, period);
+  const tLeft        = timeLeft(q, period);
+  const doneClass    = q.done    ? 'quest-card--done'    : '';
+  const expiredClass = expired   ? 'quest-card--expired' : '';
+  const disabledAttr = (q.done || expired) ? 'disabled' : '';
+  const fillClass    = q.done    ? 'quest-card__progress-fill done'
+                     : expired   ? 'quest-card__progress-fill expired'
+                     : 'quest-card__progress-fill';
+
+  /* timer badge */
+  let timerBadge = '';
+  if (q.done) {
+    timerBadge = `<span class="badge badge--done">✅ تموم شد</span>`;
+  } else if (expired) {
+    timerBadge = `<span class="badge badge--expired">💀 منقضی شد</span>`;
+  } else if (tLeft) {
+    const urgency = tLeft.includes('دقیقه') || (tLeft.includes('ساعت') && parseInt(tLeft) <= 3)
+      ? 'badge--timer-urgent' : 'badge--timer';
+    timerBadge = `<span class="badge ${urgency}">⏳ ${tLeft} مانده</span>`;
+  }
 
   return `
-  <div class="quest-card ${doneClass}" data-priority="${q.priority}" data-id="${q.id}" data-period="${period}">
+  <div class="quest-card ${doneClass} ${expiredClass}"
+       data-priority="${q.priority}" data-id="${q.id}" data-period="${period}">
     <div class="quest-card__top">
       <div class="quest-card__meta">
         <div class="quest-card__title">${escHtml(q.title)}</div>
@@ -67,7 +84,7 @@ function questCardHTML(period, q) {
       </div>
       <div class="quest-card__badges">
         <span class="badge badge--xp">⚡ ${q.xp} XP</span>
-        <span class="badge badge--coin">💎 ${q.coins}</span>
+        ${timerBadge}
       </div>
     </div>
 
@@ -84,7 +101,7 @@ function questCardHTML(period, q) {
     <div class="quest-card__actions">
       <button class="btn-action btn-action--progress" data-action="progress" ${disabledAttr}>📊 پیشرفت</button>
       <button class="btn-action btn-action--complete" data-action="complete" ${disabledAttr}>✅ کامل شد</button>
-      <button class="btn-action btn-action--edit"     data-action="edit">✏️ ویرایش</button>
+      <button class="btn-action btn-action--edit"     data-action="edit" ${expired ? 'disabled' : ''}>✏️ ویرایش</button>
       <button class="btn-action btn-action--delete"   data-action="delete">🗑️ حذف</button>
     </div>
   </div>`;
@@ -97,12 +114,12 @@ function renderRewards(state) {
   if (!container) return;
 
   container.innerHTML = REWARDS.map(r => {
-    const isUnlocked = isRewardUnlocked(r, player);
-    const progress   = getRewardProgress(r, player);   // { current, needed, label }
-    const cls        = isUnlocked ? 'reward-card--unlocked' : 'reward-card--locked';
-    const pct        = Math.min(100, Math.round((progress.current / progress.needed) * 100));
+    const unlocked  = isRewardUnlocked(r, player);
+    const progress  = getRewardProgress(r, player);
+    const cls       = unlocked ? 'reward-card--unlocked' : 'reward-card--locked';
+    const pct       = Math.min(100, Math.round((progress.current / progress.needed) * 100));
 
-    const progressBar = isUnlocked ? '' : `
+    const progressBar = unlocked ? '' : `
       <div class="reward-progress">
         <div class="reward-progress__labels">
           <span>${progress.label}</span>
@@ -115,37 +132,22 @@ function renderRewards(state) {
       </div>`;
 
     const prizeBox = `
-      <div class="reward-prize ${isUnlocked ? 'reward-prize--unlocked' : ''}">
+      <div class="reward-prize ${unlocked ? 'reward-prize--unlocked' : ''}">
         <span class="reward-prize__icon">${r.prizeIcon}</span>
         <span class="reward-prize__text">${r.prize}</span>
       </div>`;
 
     return `
       <div class="reward-card ${cls}">
-        ${isUnlocked ? '<div class="reward-card__shimmer"></div>' : ''}
+        ${unlocked ? '<div class="reward-card__shimmer"></div>' : ''}
         <div class="reward-card__icon">${r.icon}</div>
         <div class="reward-card__name">${r.name}</div>
         <div class="reward-card__req">${r.req}</div>
         ${prizeBox}
         ${progressBar}
-        <div class="reward-card__status">${isUnlocked ? '✨ باز شده' : '🔒 قفل'}</div>
+        <div class="reward-card__status">${unlocked ? '✨ باز شده' : '🔒 قفل'}</div>
       </div>`;
   }).join('');
-}
-
-/* ── reward helpers ── */
-function isRewardUnlocked(r, player) {
-  if (r.level && player.level      >= r.level) return true;
-  if (r.tasks && player.totalDone  >= r.tasks) return true;
-  if (r.coins && player.coins      >= r.coins) return true;
-  return false;
-}
-
-function getRewardProgress(r, player) {
-  if (r.level) return { current: player.level,     needed: r.level, label: '🏅 لول' };
-  if (r.tasks) return { current: player.totalDone, needed: r.tasks, label: '✅ کوئست' };
-  if (r.coins) return { current: player.coins,     needed: r.coins, label: '💎 سکه' };
-  return { current: 0, needed: 1, label: '' };
 }
 
 /* ── LEVEL-UP BANNER ── */
@@ -156,12 +158,10 @@ function showLevelUp(level) {
   setTimeout(() => banner.classList.remove('show'), 2800);
 }
 
-/* ── MODAL: reward preview ── */
+/* ── MODAL: reward preview (XP only) ── */
 function updateRewardPreview(period, priority) {
-  const xp    = AUTO_XP[period][priority]    || 0;
-  const coins = AUTO_COINS[period][priority] || 0;
-  document.getElementById('previewXp').textContent    = `⚡ ${xp} XP`;
-  document.getElementById('previewCoins').textContent = `💎 ${coins} سکه`;
+  const xp = AUTO_XP[period][priority] || 0;
+  document.getElementById('previewXp').textContent = `⚡ ${xp} XP`;
 }
 
 /* ── TOAST ── */

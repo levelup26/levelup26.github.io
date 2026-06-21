@@ -2,12 +2,17 @@
    app.js – Event wiring & initialization
    ═══════════════════════════════════════════ */
 
-let currentPeriod = 'daily';
-let editingQuest  = null;
+let currentPeriod  = 'daily';
+let editingQuest   = null;
 let progressTarget = null;
+let timerInterval  = null;
 
-/* ── Boot ── */
+/* ══════════════════════════════
+   BOOT
+══════════════════════════════ */
 function boot() {
+  showOnboardingIfNeeded();
+
   const state = loadState();
   renderHUD(state);
   renderQuestList('daily',   state.quests.daily,   state);
@@ -15,12 +20,34 @@ function boot() {
   renderQuestList('monthly', state.quests.monthly, state);
   renderRewards(state);
   wireEvents();
+
+  /* تایمر: هر دقیقه کارت‌ها رو آپدیت می‌کنه */
+  timerInterval = setInterval(() => {
+    const s = loadState();
+    renderQuestList('daily',   s.quests.daily,   s);
+    renderQuestList('weekly',  s.quests.weekly,  s);
+    renderQuestList('monthly', s.quests.monthly, s);
+  }, 60 * 1000);
 }
 
-/* ═══════════════════════════════════════════
+/* ── Onboarding ── */
+function showOnboardingIfNeeded() {
+  const seen = localStorage.getItem(ONBOARD_KEY);
+  if (!seen) {
+    openModal('onboardingModal');
+  }
+}
+
+/* ══════════════════════════════
    WIRE EVENTS
-═══════════════════════════════════════════ */
+══════════════════════════════ */
 function wireEvents() {
+
+  /* onboarding start */
+  document.getElementById('onboardingStartBtn').addEventListener('click', () => {
+    localStorage.setItem(ONBOARD_KEY, '1');
+    closeModal('onboardingModal');
+  });
 
   /* ── TABS ── */
   document.querySelectorAll('.tab').forEach(btn => {
@@ -47,15 +74,13 @@ function wireEvents() {
     if (e.target === e.currentTarget) closeQuestModal();
   });
   document.getElementById('modalSaveBtn').addEventListener('click', handleQuestSave);
-
-  /* live preview when priority changes */
   document.getElementById('questPriorityInput').addEventListener('change', e => {
     updateRewardPreview(currentPeriod, e.target.value);
   });
 
   /* ── PROGRESS MODAL ── */
-  document.getElementById('progressClose').addEventListener('click',      () => closeModal('progressModal'));
-  document.getElementById('progressCancelBtn').addEventListener('click',  () => closeModal('progressModal'));
+  document.getElementById('progressClose').addEventListener('click',     () => closeModal('progressModal'));
+  document.getElementById('progressCancelBtn').addEventListener('click', () => closeModal('progressModal'));
   document.getElementById('progressModal').addEventListener('click', e => {
     if (e.target === e.currentTarget) closeModal('progressModal');
   });
@@ -70,15 +95,13 @@ function wireEvents() {
   });
 }
 
-/* ═══════════════════════════════════════════
+/* ══════════════════════════════
    HANDLERS
-═══════════════════════════════════════════ */
-
+══════════════════════════════ */
 function openAddModal(period) {
   editingQuest  = null;
   currentPeriod = period;
 
-  /* check slot availability first */
   const state = loadState();
   const { remaining, slots } = getSlotInfo(state, period);
   if (remaining <= 0) {
@@ -86,7 +109,7 @@ function openAddModal(period) {
     return;
   }
 
-  document.getElementById('modalTitle').textContent = 'کوئست جدید';
+  document.getElementById('modalTitle').textContent   = 'کوئست جدید';
   document.getElementById('questTitleInput').value    = '';
   document.getElementById('questDescInput').value     = '';
   document.getElementById('questPriorityInput').value = 'mid';
@@ -97,7 +120,7 @@ function openAddModal(period) {
 function openEditModal(period, quest) {
   editingQuest  = { period, id: quest.id };
   currentPeriod = period;
-  document.getElementById('modalTitle').textContent = 'ویرایش کوئست';
+  document.getElementById('modalTitle').textContent   = 'ویرایش کوئست';
   document.getElementById('questTitleInput').value    = quest.title;
   document.getElementById('questDescInput').value     = quest.desc || '';
   document.getElementById('questPriorityInput').value = quest.priority;
@@ -136,7 +159,6 @@ function handleQuestSave() {
   closeQuestModal();
 }
 
-/* ── card action delegation ── */
 function handleCardAction(e) {
   const btn = e.target.closest('[data-action]');
   if (!btn || btn.disabled) return;
@@ -192,18 +214,15 @@ function handleProgressSave() {
     if (leveled) setTimeout(() => showLevelUp(newLevel), 400);
   } else {
     const state = setProgress(progressTarget.period, progressTarget.id, pct);
-    if (state) {
-      refreshAll(state);
-      showToast(`📊 پیشرفت ثبت شد: ${pct}%`);
-    }
+    if (state) { refreshAll(state); showToast(`📊 پیشرفت ثبت شد: ${pct}%`); }
   }
   closeModal('progressModal');
   progressTarget = null;
 }
 
-/* ═══════════════════════════════════════════
+/* ══════════════════════════════
    HELPERS
-═══════════════════════════════════════════ */
+══════════════════════════════ */
 function refreshAll(state) {
   renderHUD(state);
   renderQuestList('daily',   state.quests.daily,   state);
@@ -216,5 +235,4 @@ function getQuestById(state, period, id) {
   return state.quests[period]?.find(q => q.id === id) || null;
 }
 
-/* ── Run ── */
 document.addEventListener('DOMContentLoaded', boot);
