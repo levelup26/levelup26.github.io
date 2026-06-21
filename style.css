@@ -416,14 +416,13 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); min-
    SUPPORT BUTTON
 ══════════════════════════════ */
 .support-footer {
-  position: fixed; bottom: 18px;
-  left: 0; right: 0;
-  display: flex; justify-content: center;
-  pointer-events: none;
+  position: fixed;
+  bottom: 18px;
+  right: 18px;
+  left: auto;
   z-index: 9999;
 }
 .support-btn {
-  pointer-events: auto;
   display: inline-flex; align-items: center; gap: 8px;
   padding: 10px 20px;
   background: rgba(22,27,34,.95);
@@ -478,7 +477,8 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); min-
   .quest-card__actions { gap: 5px; }
   .btn-action { padding: 5px 8px; font-size: .68rem; }
   .rewards-grid { grid-template-columns: 1fr 1fr; }
-  .support-btn { padding: 9px 16px; font-size: .78rem; }
+  .support-footer { bottom: 14px; right: 14px; }
+  .support-btn { padding: 8px 14px; font-size: .73rem; }
   .site-footer__inner { font-size: .72rem; }
   .onboard__step { padding: 10px; gap: 10px; }
   .onboard__step-icon { font-size: 1.3rem; }
